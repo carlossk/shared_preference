@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preference/src/pages/widgets/menu_widget.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preference/src/providers/user_preferences_provider.dart';
+import 'package:shared_preference/src/widgets/menu_widget.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({Key key}) : super(key: key);
@@ -11,18 +11,19 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _secondaryColor = true;
-  int _gender = 1;
-  String _name = 'Carlos';
+  bool _secondaryColor;
+  int _gender;
+  String _name;
   TextEditingController _textCtrl;
-
+  final pref = new UserPreferences();
   @override
-  void initState() async {
+  void initState() {
     // TODO: implement initState
     super.initState();
-    SharedPreferences preft = await SharedPreferences.getInstance();
-    _gender = preft.getInt('gender');
-    _textCtrl = new TextEditingController(text: _name);
+    pref.lastPage= SettingsPage.routeName;
+    _textCtrl = new TextEditingController(text: pref.name);
+    _gender = pref.gender;
+    _secondaryColor = pref.secondaryColor;
   }
 
   @override
@@ -31,6 +32,8 @@ class _SettingsPageState extends State<SettingsPage> {
       child: Scaffold(
           appBar: AppBar(
             title: Text('Preference'),
+            backgroundColor:
+                (pref.secondaryColor) ? Colors.pinkAccent : Colors.blue,
           ),
           drawer: MenuWidget(),
           body: ListView(
@@ -47,6 +50,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 value: _secondaryColor,
                 title: Text('Secondary color'),
                 onChanged: (value) {
+                  pref.secondaryColor = value;
                   _secondaryColor = value;
                   setState(() {});
                 },
@@ -70,7 +74,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   controller: _textCtrl,
                   decoration: InputDecoration(
                       labelText: 'Name', helperText: 'User name'),
-                  onChanged: (value) {},
+                  onChanged: (value) {
+                    pref.name = value;
+                  },
                 ),
               )
             ],
@@ -78,9 +84,8 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  _setSelectedRadio(int value) async {
-    SharedPreferences preft = await SharedPreferences.getInstance();
-    await preft.setInt('gender', value);
+  _setSelectedRadio(int value) {
+    pref.gender = value;
     _gender = value;
     setState(() {});
   }
